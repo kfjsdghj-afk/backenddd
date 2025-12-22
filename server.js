@@ -1,4 +1,4 @@
-const express = require("express");
+  const express = require("express");
 const cors = require("cors");
 require("dotenv").config();
 const path = require("path");
@@ -38,7 +38,7 @@ app.get("/health", (req, res) => {
 if (process.env.NODE_ENV === "production") {
   app.use(express.static(path.join(__dirname, "client", "build")));
 
-  // Serve React app for any other route not starting with /api
+  // React Router fallback (SAFE)
   app.get(/^\/(?!api).*/, (req, res) => {
     res.sendFile(
       path.resolve(__dirname, "client", "build", "index.html")
@@ -46,12 +46,7 @@ if (process.env.NODE_ENV === "production") {
   });
 }
 
-// 🔹 Handle unknown API routes
-app.use("/api/*", (req, res) => {
-  res.status(404).json({ message: "API route not found" });
-});
-
-// 🔹 Global error handler
+// 🔹 Global error handler (LAST)
 app.use((err, req, res, next) => {
   console.error("Server Error:", err);
   res.status(500).json({ message: "Internal Server Error" });
