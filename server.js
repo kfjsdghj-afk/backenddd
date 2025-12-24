@@ -1,4 +1,4 @@
-  const express = require("express");
+const express = require("express");
 const cors = require("cors");
 require("dotenv").config();
 const path = require("path");
@@ -10,7 +10,7 @@ const app = express();
 // 🔹 Middleware
 app.use(
   cors({
-    origin: process.env.CLIENT_URL || "*",
+    origin: "*", // frontend deployed separately
     credentials: true,
   })
 );
@@ -26,7 +26,7 @@ connectDB();
 app.use("/api/products", require("./routes/productRoutes"));
 app.use("/api/payment", require("./routes/paymentRoutes"));
 
-// 🔹 Health check route
+// 🔹 Health check
 app.get("/health", (req, res) => {
   res.status(200).json({
     status: "OK",
@@ -34,19 +34,12 @@ app.get("/health", (req, res) => {
   });
 });
 
-// 🔹 Serve frontend (ONLY IN PRODUCTION)
-if (process.env.NODE_ENV === "production") {
-  app.use(express.static(path.join(__dirname, "client", "build")));
+// 🔹 404 handler
+app.use((req, res) => {
+  res.status(404).json({ message: "Route not found" });
+});
 
-  // React Router fallback (SAFE)
-  app.get(/^\/(?!api).*/, (req, res) => {
-    res.sendFile(
-      path.resolve(__dirname, "client", "build", "index.html")
-    );
-  });
-}
-
-// 🔹 Global error handler (LAST)
+// 🔹 Global error handler
 app.use((err, req, res, next) => {
   console.error("Server Error:", err);
   res.status(500).json({ message: "Internal Server Error" });
